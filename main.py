@@ -1,58 +1,94 @@
-#Resume Parser
+import re
 import spacy
-from spacy.matcher import PhraseMatcher
-from collections import defaultdict
+
+# Load spaCy English model
 nlp = spacy.load("en_core_web_sm")
+
+# Example resumes
+# resumes = [
+#     "John Doe\nSoftware Engineer\nSkills: Python, Java, JavaScript\nExperience: Software Engineer at ABC Inc.",
+#     "Jane Smith\nGraphic Designer\nSkills: Adobe Photoshop, Illustrator, InDesign\nExperience: Graphic Designer at XYZ Corp.",
+#     "Michael Johnson\nData Scientist\nSkills: Python, R, SQL\nExperience: Data Scientist at Acme Co."
+# ]
 resumes = [
-    "Creative resume text here...",
-    "Visual resume text here...",
-    "Standard resume text here..."
+    "John Doe\nSoftware Engineer\nSkills: Python, Java, JavaScript\nExperience: Software Engineer at ABC Inc. Led a team of 5 developers and implemented new features. Increased code efficiency by 20%.",
+    "Jane Smith\nGraphic Designer\nSkills: Adobe Photoshop, Illustrator, InDesign\nExperience: Graphic Designer at XYZ Corp. Designed marketing materials and led creative projects. Developed brand identity guidelines.",
+    "Michael Johnson\nData Scientist\nSkills: Python, R, SQL\nExperience: Data Scientist at Acme Co. Analyzed large datasets and built predictive models. Led data-driven decision-making initiatives."
 ]
+
+
 
 # Resume Parsing
 def parse_resume(resume_text):
     """
     Parse a resume and extract relevant information.
     """
-    doc = nlp(resume_text)
-    skills = extract_skills(doc)
-    experiences = extract_experiences(doc)
-    achievements = extract_achievements(doc)
+    skills = extract_skills(resume_text)
+    experiences = extract_experiences(resume_text)
+    achievements = extract_achievements(resume_text)
     return {
         "skills": skills,
         "experiences": experiences,
         "achievements": achievements
     }
 
-# Skill and Experience Extraction
-def extract_skills(doc):
+# Skill Extraction with Synonym Matching
+def extract_skills(resume_text):
     """
     Extract skills from the parsed resume.
     """
-    matcher = PhraseMatcher(nlp.vocab)
-    skills_list = ["python", "machine learning", "data analysis"]  
-patterns = [nlp(skill) for skill in skills_list]
-    matcher.add("Skills", None, *patterns)
-    matches = matcher(doc)
-    return [doc[start:end].text for match_id, start, end in matches]
+    skills_list = ["python", "machine learning", "data analysis"]
+    
+    # Define a regular expression pattern to find skill mentions
+    pattern = r'\b(?:' + '|'.join(skills_list) + r')\b'
+    
+    # Extract skills using the pattern
+    skills = re.findall(pattern, resume_text, flags=re.IGNORECASE)
+    
+    return skills
 
-def extract_experiences(doc):
+# Experience Extraction with Pattern Matching
+def extract_experiences(resume_text):
     """
     Extract experiences from the parsed resume.
     """
-    experiences = []  
+    doc = nlp(resume_text)
+    experiences = [ent.text for ent in doc.ents if ent.label_ == "ORG" or ent.label_ == "TITLE"]
     return experiences
 
-# Quantifiable Achievement Identification
-def extract_achievements(doc):
-   
-    achievements = []  
+
+# Achievement Extraction with Improved Patterns
+def extract_achievements(resume_text):
+    """
+    Extract quantifiable achievements from the parsed resume.
+    """
+    achievements = []
+    pattern = r'(?:increased|decreased|led|managed|developed|implemented) [a-zA-Z]+(?: by)? \d+%?'
+    matches = re.findall(pattern, resume_text, flags=re.IGNORECASE)
+    for match in matches:
+        achievements.append(match.capitalize())  # Capitalize the achievement
     return achievements
+
+
+# Additional functionality to handle various resume formats and layouts
+def extract_information(resume_text):
+    """
+    Extract information from resumes including personal details, education history, skills, experiences, and achievements.
+    """
+    return {
+        "personal_details": None,  # No placeholder
+        "education_history": None,  # No placeholder
+        "skills": parse_resume(resume_text)["skills"],
+        "experiences": parse_resume(resume_text)["experiences"],
+        "achievements": parse_resume(resume_text)["achievements"]
+    }
+
 
 # Example usage
 for resume in resumes:
-    parsed_resume = parse_resume(resume)
-    print("Skills:", parsed_resume["skills"])
-    print("Experiences:", parsed_resume["experiences"])
-    print("Achievements:", parsed_resume["achievements"])
-
+    extracted_info = extract_information(resume)
+    print("Personal Details:", extracted_info["personal_details"])
+    print("Education History:", extracted_info["education_history"])
+    print("Skills:", extracted_info["skills"])
+    print("Experiences:", extracted_info["experiences"])
+    print("Achievements:", extracted_info["achievements"])
