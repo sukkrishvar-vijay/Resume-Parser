@@ -1,13 +1,16 @@
 # Resume-Parser
 
 1. Setup and Installation:
+
 • Ensure you have Python installed on your system.
 
 2. Data Preparation:
+
 • Prepare your resume dataset in CSV format similar to 'ResumeDataSet.csv' provided in the project.
 • Ensure it contains columns for 'Category' (job categories) and 'Resume' (textual content of resumes).
 
 3. Training the Model:
+
 • Run the provided code to preprocess the data, train the model, and serialize the trained components (TF-IDF vectorizer and classifier).
 • This step involves executing the Python script or notebook containing the code snippets provided in the project.
 
