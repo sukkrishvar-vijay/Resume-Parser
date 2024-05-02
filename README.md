@@ -1,6 +1,6 @@
 # Resume-Parser
 
-1. Setup and Installation:\n
+1. Setup and Installation:<br>
 • Ensure you have Python installed on your system.
 
 2. Data Preparation:
